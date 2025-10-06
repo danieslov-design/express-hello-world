@@ -6,7 +6,7 @@ app.use(express.json());
 
 const APPKEY = "3F7BBE61DA43549D97CA19D1AC87C524";
 const SECRETKEY = "3uytqcjy6ciw7e4p1kufd16pz55uzgu7";
-const REDIRECT = "https://my-sun-data.onrender.com/callback";
+const REDIRECT = "https://express-hello-world-lsql.onrender.com/callback";
 
 app.get("/", (req, res) => res.send("Servern körs. Prova /callback?code=XYZ"));
 
