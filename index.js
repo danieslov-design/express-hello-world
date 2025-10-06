@@ -15,7 +15,7 @@ app.get("/getStationList", async (req, res) => {
   const token = req.query.token;
   if (!token) return res.status(400).send("Missing ?token parameter");
 
-const url = "https://gateway.isolarcloud.com/openapi/pvm/station/v2/getStationList";
+const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getStationList";
   const payload = { appkey: APPKEY, curPage: 1, size: 10 };
 
   try {
