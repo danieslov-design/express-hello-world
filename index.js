@@ -74,7 +74,7 @@ app.get("/getStationList", async (req, res) => {
   const token = req.query.token;
   if (!token) return res.status(400).send("Missing ?token parameter");
 
-  const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getStationList";
+ const url = "https://gateway.isolarcloud.eu/openapi/ems/station/v2/getStationList";
 
   // 👇 nytt: rätt payload för V2
   const payload = {
