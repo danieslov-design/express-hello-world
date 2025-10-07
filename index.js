@@ -75,7 +75,14 @@ app.get("/getStationList", async (req, res) => {
   if (!token) return res.status(400).send("Missing ?token parameter");
 
   const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getStationList";
-  const payload = { appkey: APPKEY, curPage: 1, size: 10 };
+
+  // 👇 nytt: rätt payload för V2
+  const payload = {
+    appkey: APPKEY,
+    curPage: 1,
+    size: 10,
+    sys_code: "901"
+  };
 
   try {
     const r = await fetch(url, {
@@ -90,6 +97,7 @@ app.get("/getStationList", async (req, res) => {
     });
 
     const text = await r.text();
+    console.log("Svar från Sungrow:", text);
     res.type("application/json").send(text);
   } catch (err) {
     res.status(500).send({ error: err.message });
