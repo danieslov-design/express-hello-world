@@ -47,7 +47,7 @@ app.get("/getToken", async (req, res) => {
   };
 
   try {
-    const r = await fetch("https://gateway.isolarcloud.com/openapi/apiManage/token", {
+    const r = await fetch("https://gateway.isolarcloud.eu/openapi/apiManage/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
