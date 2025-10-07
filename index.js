@@ -7,11 +7,9 @@ app.use(express.json());
 // 🔹 Dina nycklar från Developer-portalen
 const APPKEY = "3F7BBE61DA43549D97CA19D1AC87C524";
 const SECRETKEY = "3uytqcjy6ciw7e4p1kufd16pz55uzgu7";
-
-// 🔹 Redirect som också är registrerad i portalen
 const REDIRECT = "https://express-hello-world-lsql.onrender.com/callback";
 
-// 🔹 Testa servern
+// 🧩 Testa att Render-servern är igång
 app.get("/", (req, res) => {
   res.send(`
     <h3>Render-proxy aktiv ✅</h3>
@@ -25,7 +23,8 @@ app.get("/", (req, res) => {
 // 🔹 1️⃣ Tar emot redirect från iSolarCloud
 app.get("/callback", (req, res) => {
   const code = req.query.code;
-  if (!code) return res.send("Ingen code i URL:en 😕");
+  if (!code) return res.send("Ingen ?code i URL:en 😕");
+
   res.send(`
     <h3>✅ Callback mottagen</h3>
     <p>Din code är: <b>${code}</b></p>
@@ -47,7 +46,7 @@ app.get("/getToken", async (req, res) => {
   };
 
   try {
-    const r = await fetch("https://gateway.isolarcloud.eu/openapi/apiManage/token", {
+    const r = await fetch("https://gateway.isolarcloud.com/openapi/apiManage/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -69,20 +68,13 @@ app.get("/getToken", async (req, res) => {
   }
 });
 
-// 🔹 3️⃣ Exempel: anrop från Google Apps Script
+// 🔹 3️⃣ Testa token: Hämta stationer
 app.get("/getStationList", async (req, res) => {
   const token = req.query.token;
   if (!token) return res.status(400).send("Missing ?token parameter");
 
- const url = "https://gateway.isolarcloud.eu/openapi/ems/station/v2/getStationList";
-
-  // 👇 nytt: rätt payload för V2
-  const payload = {
-    appkey: APPKEY,
-    curPage: 1,
-    size: 10,
-    sys_code: "901"
-  };
+  const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getStationList";
+  const payload = { appkey: APPKEY, curPage: 1, size: 10, sys_code: "901" };
 
   try {
     const r = await fetch(url, {
@@ -97,7 +89,35 @@ app.get("/getStationList", async (req, res) => {
     });
 
     const text = await r.text();
-    console.log("Svar från Sungrow:", text);
+    console.log("Svar från getStationList:", text);
+    res.type("application/json").send(text);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
+
+// 🔹 4️⃣ Hämtar KPI-data för en dag (PV, Load, Buy, Sell)
+app.post("/getKpiDay", async (req, res) => {
+  const token = req.query.token;
+  if (!token) return res.status(400).send("Missing ?token parameter");
+
+  const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getKpiStationDay";
+  const body = req.body;
+
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token,
+        "x-access-key": SECRETKEY,
+        "sys_code": "901"
+      },
+      body: JSON.stringify(body)
+    });
+
+    const text = await r.text();
+    console.log("Svar från getKpiStationDay:", text);
     res.type("application/json").send(text);
   } catch (err) {
     res.status(500).send({ error: err.message });
