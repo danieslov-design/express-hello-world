@@ -4,18 +4,77 @@ import fetch from "node-fetch-native";
 const app = express();
 app.use(express.json());
 
+// 🔹 Dina nycklar från Developer-portalen
 const APPKEY = "3F7BBE61DA43549D97CA19D1AC87C524";
 const SECRETKEY = "3uytqcjy6ciw7e4p1kufd16pz55uzgu7";
 
-// ✅ Testa att Render körs
-app.get("/", (req, res) => res.send("Render-proxy aktiv – använd /getStationList?token=XYZ"));
+// 🔹 Redirect som också är registrerad i portalen
+const REDIRECT = "https://express-hello-world-lsql.onrender.com/callback";
 
-// 🔹 Proxy som tar emot anrop från Google Apps Script
+// 🔹 Testa servern
+app.get("/", (req, res) => {
+  res.send(`
+    <h3>Render-proxy aktiv ✅</h3>
+    <p>För att logga in i iSolarCloud klicka här:</p>
+    <a href="https://web3.isolarcloud.eu/#/authorized-app?cloudId=3&applicationId=2012&redirectUrl=${encodeURIComponent(REDIRECT)}" target="_blank">
+      Auktorisera MySunDataV2
+    </a>
+  `);
+});
+
+// 🔹 1️⃣ Tar emot redirect från iSolarCloud
+app.get("/callback", (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.send("Ingen code i URL:en 😕");
+  res.send(`
+    <h3>✅ Callback mottagen</h3>
+    <p>Din code är: <b>${code}</b></p>
+    <p>Nu kan du byta code mot token här:</p>
+    <a href="/getToken?code=${code}">/getToken?code=${code}</a>
+  `);
+});
+
+// 🔹 2️⃣ Byter code → access_token
+app.get("/getToken", async (req, res) => {
+  const code = req.query.code;
+  if (!code) return res.send("Missing ?code parameter");
+
+  const payload = {
+    appkey: APPKEY,
+    grant_type: "authorization_code",
+    code: code,
+    redirect_uri: REDIRECT
+  };
+
+  try {
+    const r = await fetch("https://gateway.isolarcloud.com/openapi/apiManage/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-key": SECRETKEY
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await r.json();
+    console.log("Token response:", data);
+
+    if (data.result_code === "1") {
+      res.send(`<pre>✅ Token mottagen!\n\n${JSON.stringify(data.result_data, null, 2)}</pre>`);
+    } else {
+      res.send(`<pre>❌ Token error:\n\n${JSON.stringify(data, null, 2)}</pre>`);
+    }
+  } catch (err) {
+    res.send(`<pre>Fel vid tokenhämtning: ${err.message}</pre>`);
+  }
+});
+
+// 🔹 3️⃣ Exempel: anrop från Google Apps Script
 app.get("/getStationList", async (req, res) => {
   const token = req.query.token;
   if (!token) return res.status(400).send("Missing ?token parameter");
 
-const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getStationList";
+  const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getStationList";
   const payload = { appkey: APPKEY, curPage: 1, size: 10 };
 
   try {
@@ -37,4 +96,5 @@ const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getStationLis
   }
 });
 
-app.listen(3000, () => console.log("Servern körs på port 3000"));
+// 🔹 Starta servern
+app.listen(3000, () => console.log("✅ Servern körs på port 3000"));
