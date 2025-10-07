@@ -38,12 +38,13 @@ app.get("/getToken", async (req, res) => {
   const code = req.query.code;
   if (!code) return res.send("Missing ?code parameter");
 
-  const payload = {
-    appkey: APPKEY,
-    grant_type: "authorization_code",
-    code: code,
-    redirect_uri: REDIRECT
-  };
+ const payload = {
+  appkey: APPKEY,
+  curPage: 1,
+  size: 10,
+  sys_code: "901",
+  auth_user: 529802  // 👈 lägg till denna
+};
 
   try {
     const r = await fetch("https://gateway.isolarcloud.com/openapi/apiManage/token", {
@@ -102,7 +103,11 @@ app.post("/getKpiDay", async (req, res) => {
   if (!token) return res.status(400).send("Missing ?token parameter");
 
   const url = "https://gateway.isolarcloud.eu/openapi/pvm/station/v2/getKpiStationDay";
-  const body = req.body;
+  const body = {
+  ...req.body,
+  sys_code: "901",
+  auth_user: 529802   // 👈 lägg till även här
+};
 
   try {
     const r = await fetch(url, {
