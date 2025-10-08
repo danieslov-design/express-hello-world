@@ -7,7 +7,7 @@ app.use(express.json());
 // 🔹 Dina Sungrow-uppgifter
 const APPKEY = "3F7BBE61DA43549D97CA19D1AC87C524";
 const SECRETKEY = "3uytqcjy6ciw7e4p1kufd16pz55uzgu7";
-const REDIRECT = "https://express-hello-world-lsql.onrender.com/callback";
+const REDIRECT = "https://mysundata-proxy.danieslov.workers.dev/callback";
 
 // 🔹 Fast auth_user från token
 const AUTH_USER = 529802; // Din användar-ID i Sungrow
